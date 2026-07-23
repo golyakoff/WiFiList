@@ -75,6 +75,9 @@ jobs:
             echo "Release $GITHUB_REF_NAME exists - updating its assets"
             gh release upload "$GITHUB_REF_NAME" \
               app/build/outputs/apk/release/*.apk --clobber
+            # Deleting a tag reverts its published release to a draft, which is
+            # invisible on the Releases tab, so publish it again explicitly.
+            gh release edit "$GITHUB_REF_NAME" --draft=false
           else
             gh release create "$GITHUB_REF_NAME" \
               app/build/outputs/apk/release/*.apk \
