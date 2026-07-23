@@ -13,6 +13,14 @@ base {
     archivesName.set("WiFiList_$appVersionName")
 }
 
+// Signing credentials come from the environment (CI) or Gradle properties
+// (e.g. ~/.gradle/gradle.properties locally). Both lookups are configuration
+// cache friendly. When nothing is set the release build stays unsigned.
+fun secret(name: String): String? =
+    providers.environmentVariable(name).orNull ?: providers.gradleProperty(name).orNull
+
+val releaseKeystore = secret("KEYSTORE_FILE")
+
 android {
     compileSdk = 35
     namespace = "tk.zwander.wifilist"
@@ -26,6 +34,25 @@ android {
 
         vectorDrawables {
             useSupportLibrary = true
+        }
+    }
+
+    signingConfigs {
+        create("release") {
+            releaseKeystore?.let { keystore ->
+                storeFile = rootProject.file(keystore)
+                storePassword = secret("KEYSTORE_PASSWORD")
+                keyAlias = secret("KEY_ALIAS")
+                keyPassword = secret("KEY_PASSWORD")
+            }
+        }
+    }
+
+    buildTypes {
+        release {
+            // Without credentials this stays null and the APK is emitted as
+            // -release-unsigned.apk, which Android refuses to install.
+            signingConfig = releaseKeystore?.let { signingConfigs.getByName("release") }
         }
     }
 
