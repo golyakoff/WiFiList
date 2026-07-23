@@ -1,8 +1,16 @@
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin)
     alias(libs.plugins.kotlin.compose)
     alias(libs.plugins.bugsnag)
+}
+
+val appVersionName = "1.3.2"
+
+base {
+    archivesName.set("WiFiList_$appVersionName")
 }
 
 android {
@@ -14,9 +22,7 @@ android {
         minSdk = 30
         targetSdk = 35
         versionCode = 13
-        versionName = "1.3.2"
-
-        setProperty("archivesBaseName", "WiFiList_$versionName")
+        versionName = appVersionName
 
         vectorDrawables {
             useSupportLibrary = true
@@ -27,15 +33,18 @@ android {
         sourceCompatibility = JavaVersion.VERSION_17
         targetCompatibility = JavaVersion.VERSION_17
     }
-    kotlinOptions {
-        jvmTarget = "17"
-    }
     buildFeatures {
         compose = true
         buildConfig = true
     }
     composeOptions {
         kotlinCompilerExtensionVersion = libs.versions.composeCompiler.get()
+    }
+}
+
+kotlin {
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_17
     }
 }
 
