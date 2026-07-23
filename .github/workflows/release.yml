@@ -69,10 +69,18 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release create "$GITHUB_REF_NAME" \
-            app/build/outputs/apk/release/*.apk \
-            --title "$GITHUB_REF_NAME" \
-            --generate-notes
+          # Re-running a tag must not fail on an existing release, so replace
+          # the assets instead of trying to create the release a second time.
+          if gh release view "$GITHUB_REF_NAME" >/dev/null 2>&1; then
+            echo "Release $GITHUB_REF_NAME exists - updating its assets"
+            gh release upload "$GITHUB_REF_NAME" \
+              app/build/outputs/apk/release/*.apk --clobber
+          else
+            gh release create "$GITHUB_REF_NAME" \
+              app/build/outputs/apk/release/*.apk \
+              --title "$GITHUB_REF_NAME" \
+              --generate-notes
+          fi
 
       - name: Remove keystore
         if: always()
